@@ -1,59 +1,211 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# DevKH Map Editor - Backend API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel 12.x backend API for the DevKH Map Editor. Provides REST API endpoints for geospatial data management with PostGIS.
 
-## About Laravel
+## Tech Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- **Framework**: Laravel 12.x
+- **Database**: PostgreSQL 15+ with PostGIS extension
+- **Authentication**: Laravel Sanctum
+- **API**: RESTful API with GeoJSON support
+- **Spatial Operations**: PostGIS functions (ST_Union, ST_Buffer, ST_IsValid, etc.)
+- **Testing**: Pest PHP
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Prerequisites
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.2+
+- PostgreSQL 15+ with PostGIS extension
+- Composer
+- ogr2ogr (GDAL) for Shapefile support
 
-## Learning Laravel
+## Installation
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+# Install PHP dependencies
+composer install
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# Copy environment file
+cp .env.example .env
 
-## Laravel Sponsors
+# Generate application key
+php artisan key:generate
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+# Configure database in .env
+# DB_CONNECTION=pgsql
+# DB_HOST=127.0.0.1
+# DB_PORT=5432
+# DB_DATABASE=arcgiskh_api
+# DB_USERNAME=your_username
+# DB_PASSWORD=your_password
 
-### Premium Partners
+# Run migrations
+php artisan migrate
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+# Start development server
+php artisan serve
+```
 
-## Contributing
+The API will be available at `http://localhost:8000`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## PostGIS Setup
 
-## Code of Conduct
+Enable PostGIS extension in PostgreSQL:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```sql
+-- Connect to your database
+psql -U postgres -d arcgiskh_api
 
-## Security Vulnerabilities
+-- Enable PostGIS
+CREATE EXTENSION IF NOT EXISTS postgis;
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+-- Verify installation
+SELECT PostGIS_Version();
+```
+
+## API Endpoints
+
+### Authentication
+
+- `POST /api/register` - User registration
+- `POST /api/login` - User login
+- `POST /api/logout` - User logout
+
+### Layers
+
+- `GET /api/layers` - List all layers
+- `POST /api/layers` - Create new layer
+- `GET /api/layers/{id}` - Get layer details
+- `PUT /api/layers/{id}` - Update layer
+- `DELETE /api/layers/{id}` - Delete layer
+- `GET /api/layers/{id}/features` - Get layer features
+- `GET /api/layers/{id}/validate` - Validate layer topology
+
+### Features
+
+- `POST /api/features` - Create feature
+- `GET /api/features/{id}` - Get feature
+- `PUT /api/features/{id}` - Update feature
+- `DELETE /api/features/{id}` - Delete feature
+- `POST /api/features/bulk` - Bulk operations
+- `POST /api/features/import` - Import features
+- `POST /api/features/spatial-query` - Spatial queries
+- `POST /api/features/spatial-operation` - Spatial operations
+
+### Import/Export
+
+- `POST /api/import/geojson` - Import GeoJSON
+- `POST /api/import/kml` - Import KML
+- `POST /api/import/shapefile` - Import Shapefile (.zip)
+- `GET /api/layers/{id}/export/geojson` - Export GeoJSON
+- `GET /api/layers/{id}/export/kml` - Export KML
+- `GET /api/layers/{id}/export/csv` - Export CSV
+- `GET /api/layers/{id}/export/shapefile` - Export Shapefile
+
+### Audit Logs
+
+- `GET /api/audit-logs` - List all audit logs
+- `GET /api/audit-logs/summary` - Get audit summary
+- `GET /api/audit-logs/{id}` - Get single audit log
+- `GET /api/features/{featureId}/audit-logs` - Get feature audit logs
+- `GET /api/layers/{layerId}/audit-logs` - Get layer audit logs
+
+### Versioning
+
+- `GET /api/features/{feature}/versions` - Get feature versions
+- `GET /api/versions/{id}` - Get version details
+- `POST /api/versions/{id}/restore` - Restore to version
+- `POST /api/versions/compare` - Compare two versions
+- `GET /api/features/{featureId}/versions/{versionNumber}` - Get feature at version
+
+## Development
+
+```bash
+# Run tests
+php artisan test
+
+# Code formatting
+./vendor/bin/pint
+
+# Run development server
+php artisan serve
+
+# Run queue worker
+php artisan queue:work
+
+# View logs
+php artisan pail
+
+# Run all services
+npm run dev
+```
+
+## Project Structure
+
+```
+app/
+├── Http/
+│   └── Controllers/
+│       └── Api/           # API Controllers
+├── Models/                # Eloquent Models
+├── Services/              # Business Logic Services
+│   ├── AuditService.php   # Audit logging
+│   └── VersioningService.php  # Version control
+└── ...
+
+database/
+└── migrations/            # Database Migrations
+
+routes/
+└── api.php               # API Routes
+
+tests/                    # Pest Tests
+```
+
+## Environment Variables
+
+```env
+APP_NAME="DevKH Map Editor"
+APP_ENV=local
+APP_KEY=base64:your-key
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=pgsql
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DATABASE=arcgiskh_api
+DB_USERNAME=root
+DB_PASSWORD=
+
+SESSION_DRIVER=database
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+```
+
+## PostGIS Functions Used
+
+- `ST_Union` - Combine geometries
+- `ST_Difference` - Subtract geometries
+- `ST_Intersection` - Find intersection
+- `ST_Split` - Split geometries
+- `ST_Buffer` - Create buffer zones
+- `ST_IsValid` - Check geometry validity
+- `ST_MakeValid` - Repair invalid geometries
+- `ST_Overlaps` - Check for overlaps
+- `ST_Equals` - Check for duplicates
+- `ST_Intersects` - Check for intersections
+- `ST_DWithin` - Distance search
+- `ST_Contains` - Point-in-polygon test
+
+## Deployment
+
+1. Set `APP_ENV=production`
+2. Set `APP_DEBUG=false`
+3. Configure production database
+4. Run migrations: `php artisan migrate --force`
+5. Optimize: `php artisan optimize`
+6. Configure web server (nginx/apache)
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is licensed under the MIT License.
